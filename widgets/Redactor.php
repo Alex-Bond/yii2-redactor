@@ -9,7 +9,6 @@
 namespace yii\redactor\widgets;
 
 use Yii;
-use yii\helpers\Url;
 use yii\widgets\InputWidget;
 use yii\helpers\Html;
 use yii\helpers\Json;
@@ -21,22 +20,32 @@ use yii\helpers\ArrayHelper;
  * @author Nghia Nguyen <yiidevelop@hotmail.com>
  * @since 2.0
  */
-
-/**
- * Class Redactor
- * @package yii\redactor\widgets
- * @property AssetBundle $assetBundle
- * @property string $sourcePath
- */
 class Redactor extends InputWidget
 {
 
     public $options = [];
-    public $clientOptions = [];
+    public $clientOptions = [
+        'imageManagerJson' => '/redactor/upload/imagejson',
+        'imageUpload' => '/redactor/upload/image',
+        'fileUpload' => '/redactor/upload/file'
+    ];
     private $_assetBundle;
 
     public function init()
     {
+        if (!isset($this->options['id'])) {
+            if ($this->hasModel()) {
+                $this->options['id'] = Html::getInputId($this->model, $this->attribute);
+            } else {
+                $this->options['id'] = $this->getId();
+            }
+        }
+        if (isset($this->clientOptions['imageUpload'])) {
+            $this->clientOptions['imageUploadErrorCallback'] = new JsExpression("function(json){alert(json.error);}");
+        }
+        if (isset($this->clientOptions['fileUpload'])) {
+            $this->clientOptions['fileUploadErrorCallback'] = new JsExpression("function(json){alert(json.error);}");
+        }
         $this->registerAssetBundle();
         $this->registerRegional();
         $this->registerPlugins();
@@ -52,60 +61,46 @@ class Redactor extends InputWidget
         }
     }
 
-    /**
-     * Register language for Redactor
-     */
-    protected function registerRegional()
+    public function registerRegional()
     {
-        $this->clientOptions['lang'] = ArrayHelper::getValue($this->clientOptions, 'lang', Yii::$app->language);
-        $langAsset = 'lang/' . $this->clientOptions['lang'] . '.js';
-        if (file_exists($this->sourcePath . DIRECTORY_SEPARATOR . $langAsset)) {
-            $this->assetBundle->js[] = $langAsset;
-        } else {
-            ArrayHelper::remove($this->clientOptions, 'lang');
+        $lang = ArrayHelper::getValue($this->clientOptions, 'lang', false);
+        if ($lang) {
+            $langAsset = 'lang/' . $lang . '.js';
+            if (file_exists(Yii::getAlias($this->assetBundle->sourcePath . '/' . $langAsset))) {
+                $this->assetBundle->js[] = $langAsset;
+            } else {
+                ArrayHelper::remove($this->clientOptions, 'lang');
+            }
         }
-
     }
 
-    /**
-     * Register plugins for Redactor
-     */
-    protected function registerPlugins()
+    public function registerPlugins()
     {
         if (isset($this->clientOptions['plugins']) && count($this->clientOptions['plugins'])) {
             foreach ($this->clientOptions['plugins'] as $plugin) {
                 $js = 'plugins/' . $plugin . '/' . $plugin . '.js';
-                if (file_exists($this->sourcePath . DIRECTORY_SEPARATOR . $js)) {
+                if (file_exists(Yii::getAlias($this->assetBundle->sourcePath . DIRECTORY_SEPARATOR . $js))) {
                     $this->assetBundle->js[] = $js;
                 }
                 $css = 'plugins/' . $plugin . '/' . $plugin . '.css';
-                if (file_exists($this->sourcePath . DIRECTORY_SEPARATOR . $css)) {
+                if (file_exists(Yii::getAlias($this->assetBundle->sourcePath . '/' . $css))) {
                     $this->assetBundle->css[] = $css;
                 }
             }
         }
     }
 
-    /**
-     * Register clients script to View
-     */
-    protected function registerScript()
+    public function registerScript()
     {
         $clientOptions = (count($this->clientOptions)) ? Json::encode($this->clientOptions) : '';
         $this->getView()->registerJs("jQuery('#{$this->options['id']}').redactor({$clientOptions});");
     }
 
-    /**
-     * Register assetBundle
-     */
-    protected function registerAssetBundle()
+    public function registerAssetBundle()
     {
         $this->_assetBundle = RedactorAsset::register($this->getView());
     }
 
-    /**
-     * @return AssetBundle
-     */
     public function getAssetBundle()
     {
         if (!($this->_assetBundle instanceof AssetBundle)) {
@@ -114,20 +109,4 @@ class Redactor extends InputWidget
         return $this->_assetBundle;
     }
 
-    /**
-     * @return bool|string The path of assetBundle
-     */
-    public function getSourcePath()
-    {
-        return Yii::getAlias($this->getAssetBundle()->sourcePath);
-    }
-
-    /**
-     * @param $key
-     * @param null $defaultValue
-     */
-    protected function setOptionsKey($key, $defaultValue = null)
-    {
-        $this->clientOptions[$key] = Url::to(ArrayHelper::getValue($this->clientOptions, $key, $defaultValue));
-    }
 }
