@@ -23,28 +23,6 @@ to the require section of your composer.json.
 Configure
 -----------------
 
-Add to config file (config/web.php or common\config\main.php) 
-
-```
-    'modules' => [
-        'redactor' => 'yii\redactor\RedactorModule',
-    ],
-```
-or if you want to change the upload directory.
-to path/to/uploadfolder
-default value `@webroot/uploads`
-
-```
-    'modules' => [
-        'redactor' => [
-            'class' => 'yii\redactor\RedactorModule',
-            'uploadDir' => '@webroot/path/to/uploadfolder',
-            'uploadUrl' => '@web/path/to/uploadfolder',
-            'imageAllowExtensions'=>['jpg','png','gif']
-        ],
-    ],
-```
-
 note: You need to create uploads folder and chmod and set security for folder upload
 reference: [Protect Your Uploads Folder with .htaccess](http://tomolivercv.wordpress.com/2011/07/24/protect-your-uploads-folder-with-htaccess/),
 [How to Setup Secure Media Uploads](http://digwp.com/2012/09/secure-media-uploads/)

@@ -37,7 +37,6 @@ class Redactor extends InputWidget
 
     public function init()
     {
-        $this->defaultOptions();
         $this->registerAssetBundle();
         $this->registerRegional();
         $this->registerPlugins();
@@ -50,32 +49,6 @@ class Redactor extends InputWidget
             echo Html::activeTextarea($this->model, $this->attribute, $this->options);
         } else {
             echo Html::textarea($this->name, $this->value, $this->options);
-        }
-    }
-
-    /**
-     * Sets default options
-     */
-    protected function defaultOptions()
-    {
-        if (!isset($this->options['id'])) {
-            if ($this->hasModel()) {
-                $this->options['id'] = Html::getInputId($this->model, $this->attribute);
-            } else {
-                $this->options['id'] = $this->getId();
-            }
-        }
-        $this->setOptionsKey('imageUpload', Yii::$app->getModule('redactor')->imageUploadRoute);
-        $this->setOptionsKey('fileUpload', Yii::$app->getModule('redactor')->fileUploadRoute);
-
-        $this->clientOptions['imageUploadErrorCallback'] = ArrayHelper::getValue($this->clientOptions, 'imageUploadErrorCallback', new JsExpression("function(json){alert(json.error);}"));
-        $this->clientOptions['fileUploadErrorCallback'] = ArrayHelper::getValue($this->clientOptions, 'fileUploadErrorCallback', new JsExpression("function(json){alert(json.error);}"));
-
-        if (isset($this->clientOptions['plugins']) && array_search('imagemanager', $this->clientOptions['plugins']) !== false) {
-            $this->setOptionsKey('imageManagerJson', Yii::$app->getModule('redactor')->imageManagerJsonRoute);
-        }
-        if (isset($this->clientOptions['plugins']) && array_search('filemanager', $this->clientOptions['plugins']) !== false) {
-            $this->setOptionsKey('fileManagerJson', Yii::$app->getModule('redactor')->fileManagerJsonRoute);
         }
     }
 
