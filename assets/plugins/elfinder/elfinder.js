@@ -14,9 +14,7 @@ if (!RedactorPlugins) var RedactorPlugins = {};
             var dialog;
             if (!dialog) {
                 /*Непосредственно вызов ElFinder*/
-                dialog = $('<div id="file-uploader">').dialogelfinder({
-                    //Вот сюда мы так же можем вписать дополнительные нужные опции для Elfinder согласно мануалу на офф.сайте
-                    url: opts.fmUrl,
+                var options = $.extend({
                     commandsOptions: {
                         getfile: {
                             onlyURL: true,
@@ -28,7 +26,8 @@ if (!RedactorPlugins) var RedactorPlugins = {};
                     getFileCallback: function (file) {
                         callback(file);
                     }
-                });
+                }, opts.elfinder);
+                dialog = $('<div id="file-uploader">').dialogelfinder(options);
 
             } else {
                 dialog.dialogelfinder('open')
@@ -66,9 +65,8 @@ if (!RedactorPlugins) var RedactorPlugins = {};
 
         return {
             init: function () {
-                opts = $.extend({
-                    /*Это шаблон модального окна в которое передаётся ссылка на выбранный файл из elfinder*/
-                    modal_elf: String() +
+                opts = this.opts;
+                this.modal.addTemplate('modal_elf', '' +
                     '<div id="redactor-modal-body">' +
                     '<section id="redactor-modal-link-insert">' +
                     '<label>Link</label>' +
@@ -79,9 +77,8 @@ if (!RedactorPlugins) var RedactorPlugins = {};
                     '<footer>' +
                     '<button id="redactor_insaslink" class="redactor-modal-btn redactor-modal-action-btn" style="width: 49.8%;">Insert as link</button>' +
                     '<button id="redactor_insasimg" class="redactor-modal-btn redactor-modal-action-btn" style="width: 49.8%;float: right;">Insert as image</button>' +
-                    '</footer>'
-                }, this.opts);
-                this.modal.addTemplate('modal_elf', 'Insert file');
+                    '</footer>' +
+                    '');
                 /*Добавление кнопкина тулбар редактора, по клику вызывается функция fmOpen, функкция Elfresp в качестве коллбека*/
                 var button = this.button.addAfter('image', 'elfinder', 'ElFinder');
                 this.button.addCallback(button, fmOpen);
