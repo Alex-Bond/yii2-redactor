@@ -416,6 +416,10 @@ body .redactor-box-fullscreen {
     content: "\e61f";
 }
 
+.re-elfinder:before {
+    content: "\e61a";
+}
+
 /*
 	Toolbar tooltip
 */
