@@ -81,11 +81,11 @@ class Redactor extends InputWidget
     {
         $this->options = ArrayHelper::merge(
             $this->options,
-            is_null($this->module) ? [] : $this->module->widgetOptions
+            (is_null($this->module) ? [] : $this->module->widgetOptions)
         );
         $this->clientOptions = ArrayHelper::merge(
             $this->clientOptions,
-            is_null($this->module) ? [] : $this->module->widgetClientOptions
+            (is_null($this->module) ? [] : $this->module->widgetClientOptions)
         );
         if (!isset($this->options['id'])) {
             if ($this->hasModel()) {
@@ -96,14 +96,17 @@ class Redactor extends InputWidget
         }
         Html::addCssClass($this->options, 'form-control');
 
-        $this->setOptionsKey('imageUpload', is_null($this->module) ? "" : $this->module->imageUploadRoute);
-        $this->setOptionsKey('fileUpload', is_null($this->module) ? "" : $this->module->fileUploadRoute);
+        if (!is_null($this->module) && !empty($this->module->imageUploadRoute)) {
+            $this->setOptionsKey('imageUpload', $this->module->imageUploadRoute);
+            $this->clientOptions['imageUploadErrorCallback'] = ArrayHelper::getValue($this->clientOptions,
+                'imageUploadErrorCallback', new JsExpression("function(json){alert(json.error);}"));
+        }
 
-        $this->clientOptions['imageUploadErrorCallback'] = ArrayHelper::getValue($this->clientOptions,
-            'imageUploadErrorCallback', new JsExpression("function(json){alert(json.error);}"));
-        $this->clientOptions['fileUploadErrorCallback'] = ArrayHelper::getValue($this->clientOptions,
-            'fileUploadErrorCallback', new JsExpression("function(json){alert(json.error);}"));
-
+        if (!is_null($this->module) && !empty($this->module->fileUploadRoute)) {
+            $this->setOptionsKey('fileUpload', $this->module->fileUploadRoute);
+            $this->clientOptions['fileUploadErrorCallback'] = ArrayHelper::getValue($this->clientOptions,
+                'fileUploadErrorCallback', new JsExpression("function(json){alert(json.error);}"));
+        }
         if (isset($this->clientOptions['plugins']) && array_search('imagemanager',
                 $this->clientOptions['plugins']) !== false
         ) {
