@@ -61,6 +61,7 @@ class Redactor extends InputWidget
         $this->registerPlugins();
         $this->registerScript();
     }
+
     /**
      * @inheritdoc
      */
@@ -78,8 +79,14 @@ class Redactor extends InputWidget
      */
     protected function defaultOptions()
     {
-        $this->options = ArrayHelper::merge($this->options, $this->module->widgetOptions);
-        $this->clientOptions = ArrayHelper::merge($this->clientOptions, $this->module->widgetClientOptions);
+        $this->options = ArrayHelper::merge(
+            $this->options,
+            is_null($this->module) ? [] : $this->module->widgetOptions
+        );
+        $this->clientOptions = ArrayHelper::merge(
+            $this->clientOptions,
+            is_null($this->module) ? [] : $this->module->widgetClientOptions
+        );
         if (!isset($this->options['id'])) {
             if ($this->hasModel()) {
                 $this->options['id'] = Html::getInputId($this->model, $this->attribute);
@@ -89,17 +96,29 @@ class Redactor extends InputWidget
         }
         Html::addCssClass($this->options, 'form-control');
 
-        $this->setOptionsKey('imageUpload', $this->module->imageUploadRoute);
-        $this->setOptionsKey('fileUpload', $this->module->fileUploadRoute);
+        $this->setOptionsKey('imageUpload', is_null($this->module) ? "" : $this->module->imageUploadRoute);
+        $this->setOptionsKey('fileUpload', is_null($this->module) ? "" : $this->module->fileUploadRoute);
 
-        $this->clientOptions['imageUploadErrorCallback'] = ArrayHelper::getValue($this->clientOptions, 'imageUploadErrorCallback', new JsExpression("function(json){alert(json.error);}"));
-        $this->clientOptions['fileUploadErrorCallback'] = ArrayHelper::getValue($this->clientOptions, 'fileUploadErrorCallback', new JsExpression("function(json){alert(json.error);}"));
+        $this->clientOptions['imageUploadErrorCallback'] = ArrayHelper::getValue($this->clientOptions,
+            'imageUploadErrorCallback', new JsExpression("function(json){alert(json.error);}"));
+        $this->clientOptions['fileUploadErrorCallback'] = ArrayHelper::getValue($this->clientOptions,
+            'fileUploadErrorCallback', new JsExpression("function(json){alert(json.error);}"));
 
-        if (isset($this->clientOptions['plugins']) && array_search('imagemanager', $this->clientOptions['plugins']) !== false) {
-            $this->setOptionsKey('imageManagerJson', $this->module->imageManagerJsonRoute);
+        if (isset($this->clientOptions['plugins']) && array_search('imagemanager',
+                $this->clientOptions['plugins']) !== false
+        ) {
+            $this->setOptionsKey(
+                'imageManagerJson',
+                is_null($this->module) ? "" : $this->module->imageManagerJsonRoute
+            );
         }
-        if (isset($this->clientOptions['plugins']) && array_search('filemanager', $this->clientOptions['plugins']) !== false) {
-            $this->setOptionsKey('fileManagerJson', $this->module->fileManagerJsonRoute);
+        if (isset($this->clientOptions['plugins']) && array_search('filemanager',
+                $this->clientOptions['plugins']) !== false
+        ) {
+            $this->setOptionsKey(
+                'fileManagerJson',
+                is_null($this->module) ? "" : $this->module->fileManagerJsonRoute
+            );
         }
     }
 
@@ -179,9 +198,6 @@ class Redactor extends InputWidget
      */
     public function getModule()
     {
-        if (is_null(Yii::$app->getModule($this->moduleId))) {
-            throw new InvalidConfigException('Invalid config Redactor module with "$moduleId"');
-        }
         return Yii::$app->getModule($this->moduleId);
     }
 
